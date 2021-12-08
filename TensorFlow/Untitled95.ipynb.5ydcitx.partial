@@ -1,0 +1,1697 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Data standardization - Tensorflow linear regression model\n",
+    "\n",
+    "Theoretical explanation\n",
+    "The standardization of data for machine learning models involves the transformation of primary data so that their distribution has an average value of 0 and a standard deviation of 1. The average column value will be subtracted from each value in the data column, and then what will come out will be divided by the standard deviation of the data column . The described process applies to each column separately."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "C:\\ProgramData\\Anaconda3\\envs\\OLD_TF\\lib\\site-packages\\tensorflow\\python\\framework\\dtypes.py:493: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.\n",
+      "  _np_qint8 = np.dtype([(\"qint8\", np.int8, 1)])\n",
+      "C:\\ProgramData\\Anaconda3\\envs\\OLD_TF\\lib\\site-packages\\tensorflow\\python\\framework\\dtypes.py:494: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.\n",
+      "  _np_quint8 = np.dtype([(\"quint8\", np.uint8, 1)])\n",
+      "C:\\ProgramData\\Anaconda3\\envs\\OLD_TF\\lib\\site-packages\\tensorflow\\python\\framework\\dtypes.py:495: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.\n",
+      "  _np_qint16 = np.dtype([(\"qint16\", np.int16, 1)])\n",
+      "C:\\ProgramData\\Anaconda3\\envs\\OLD_TF\\lib\\site-packages\\tensorflow\\python\\framework\\dtypes.py:496: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.\n",
+      "  _np_quint16 = np.dtype([(\"quint16\", np.uint16, 1)])\n",
+      "C:\\ProgramData\\Anaconda3\\envs\\OLD_TF\\lib\\site-packages\\tensorflow\\python\\framework\\dtypes.py:497: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.\n",
+      "  _np_qint32 = np.dtype([(\"qint32\", np.int32, 1)])\n",
+      "C:\\ProgramData\\Anaconda3\\envs\\OLD_TF\\lib\\site-packages\\tensorflow\\python\\framework\\dtypes.py:502: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.\n",
+      "  np_resource = np.dtype([(\"resource\", np.ubyte, 1)])\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>CO(GT)</th>\n",
+       "      <th>PT08.S1(CO)</th>\n",
+       "      <th>C6H6(GT)</th>\n",
+       "      <th>PT08.S2(NMHC)</th>\n",
+       "      <th>NOx(GT)</th>\n",
+       "      <th>PT08.S3(NOx)</th>\n",
+       "      <th>NO2(GT)</th>\n",
+       "      <th>PT08.S4(NO2)</th>\n",
+       "      <th>PT08.S5(O3)</th>\n",
+       "      <th>T</th>\n",
+       "      <th>RH</th>\n",
+       "      <th>AH</th>\n",
+       "      <th>Month</th>\n",
+       "      <th>Weekday</th>\n",
+       "      <th>Hours</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>2.6</td>\n",
+       "      <td>1360.0</td>\n",
+       "      <td>11.9</td>\n",
+       "      <td>1046.0</td>\n",
+       "      <td>166.0</td>\n",
+       "      <td>1056.0</td>\n",
+       "      <td>113.0</td>\n",
+       "      <td>1692.0</td>\n",
+       "      <td>1268.0</td>\n",
+       "      <td>13.6</td>\n",
+       "      <td>48.9</td>\n",
+       "      <td>0.7578</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2</td>\n",
+       "      <td>18</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2.0</td>\n",
+       "      <td>1292.0</td>\n",
+       "      <td>9.4</td>\n",
+       "      <td>955.0</td>\n",
+       "      <td>103.0</td>\n",
+       "      <td>1174.0</td>\n",
+       "      <td>92.0</td>\n",
+       "      <td>1559.0</td>\n",
+       "      <td>972.0</td>\n",
+       "      <td>13.3</td>\n",
+       "      <td>47.7</td>\n",
+       "      <td>0.7255</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2</td>\n",
+       "      <td>19</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>2.2</td>\n",
+       "      <td>1402.0</td>\n",
+       "      <td>9.0</td>\n",
+       "      <td>939.0</td>\n",
+       "      <td>131.0</td>\n",
+       "      <td>1140.0</td>\n",
+       "      <td>114.0</td>\n",
+       "      <td>1555.0</td>\n",
+       "      <td>1074.0</td>\n",
+       "      <td>11.9</td>\n",
+       "      <td>54.0</td>\n",
+       "      <td>0.7502</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2</td>\n",
+       "      <td>20</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   CO(GT)  PT08.S1(CO)  C6H6(GT)  PT08.S2(NMHC)  NOx(GT)  PT08.S3(NOx)  \\\n",
+       "0     2.6       1360.0      11.9         1046.0    166.0        1056.0   \n",
+       "1     2.0       1292.0       9.4          955.0    103.0        1174.0   \n",
+       "2     2.2       1402.0       9.0          939.0    131.0        1140.0   \n",
+       "\n",
+       "   NO2(GT)  PT08.S4(NO2)  PT08.S5(O3)     T    RH      AH  Month  Weekday  \\\n",
+       "0    113.0        1692.0       1268.0  13.6  48.9  0.7578      3        2   \n",
+       "1     92.0        1559.0        972.0  13.3  47.7  0.7255      3        2   \n",
+       "2    114.0        1555.0       1074.0  11.9  54.0  0.7502      3        2   \n",
+       "\n",
+       "   Hours  \n",
+       "0     18  \n",
+       "1     19  \n",
+       "2     20  "
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import tensorflow as tf\n",
+    "import pandas as pd\n",
+    "from sklearn import model_selection\n",
+    "import numpy as np\n",
+    "\n",
+    "df = pd.read_csv('c:/TF/AirQ_filled2.csv', usecols=['CO(GT)','PT08.S1(CO)','C6H6(GT)','PT08.S2(NMHC)','NOx(GT)','PT08.S3(NOx)','NO2(GT)','PT08.S4(NO2)','PT08.S5(O3)','T','RH', 'AH'\n",
+    "        ,'Month','Weekday','Hours'])\n",
+    "df.head(3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "In the previous post I built a linear regression model that had a square of 90%. This time I will do several treatments, which I hope will improve the effectiveness of the model.\n",
+    "\n",
+    "http://sigmaquality.pl/python/linear-regression-3/\n",
+    "\n",
+    "I change the names of the columns to use the Tensorflow model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "df.columns = ['CO_GT', 'PT08.S1_CO', 'C6H6_GT', 'PT08.S2_NMHC',\n",
+    "       'NOx_GT', 'PT08.S3_NOx', 'NO2_GT', 'PT08.S4_NO2', 'PT08.S5_O3',\n",
+    "       'T', 'RH', 'AH', 'Month', 'Weekday', 'Hours']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## Standardization of data in Sklearn"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>CO_GT</th>\n",
+       "      <th>PT08.S1_CO</th>\n",
+       "      <th>C6H6_GT</th>\n",
+       "      <th>PT08.S2_NMHC</th>\n",
+       "      <th>NOx_GT</th>\n",
+       "      <th>PT08.S3_NOx</th>\n",
+       "      <th>NO2_GT</th>\n",
+       "      <th>PT08.S4_NO2</th>\n",
+       "      <th>PT08.S5_O3</th>\n",
+       "      <th>T</th>\n",
+       "      <th>RH</th>\n",
+       "      <th>AH</th>\n",
+       "      <th>Month</th>\n",
+       "      <th>Weekday</th>\n",
+       "      <th>Hours</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>2.6</td>\n",
+       "      <td>1360.0</td>\n",
+       "      <td>11.9</td>\n",
+       "      <td>1046.0</td>\n",
+       "      <td>166.0</td>\n",
+       "      <td>1056.0</td>\n",
+       "      <td>113.0</td>\n",
+       "      <td>1692.0</td>\n",
+       "      <td>1268.0</td>\n",
+       "      <td>13.6</td>\n",
+       "      <td>48.9</td>\n",
+       "      <td>0.7578</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2</td>\n",
+       "      <td>18</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>2.0</td>\n",
+       "      <td>1292.0</td>\n",
+       "      <td>9.4</td>\n",
+       "      <td>955.0</td>\n",
+       "      <td>103.0</td>\n",
+       "      <td>1174.0</td>\n",
+       "      <td>92.0</td>\n",
+       "      <td>1559.0</td>\n",
+       "      <td>972.0</td>\n",
+       "      <td>13.3</td>\n",
+       "      <td>47.7</td>\n",
+       "      <td>0.7255</td>\n",
+       "      <td>3</td>\n",
+       "      <td>2</td>\n",
+       "      <td>19</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "   CO_GT  PT08.S1_CO  C6H6_GT  PT08.S2_NMHC  NOx_GT  PT08.S3_NOx  NO2_GT  \\\n",
+       "0    2.6      1360.0     11.9        1046.0   166.0       1056.0   113.0   \n",
+       "1    2.0      1292.0      9.4         955.0   103.0       1174.0    92.0   \n",
+       "\n",
+       "   PT08.S4_NO2  PT08.S5_O3     T    RH      AH  Month  Weekday  Hours  \n",
+       "0       1692.0      1268.0  13.6  48.9  0.7578      3        2     18  \n",
+       "1       1559.0       972.0  13.3  47.7  0.7255      3        2     19  "
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df.head(2)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Matrix created from the table above."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[   2.6, 1360. ,   11.9, ...,    3. ,    2. ,   18. ],\n",
+       "       [   2. , 1292. ,    9.4, ...,    3. ,    2. ,   19. ],\n",
+       "       [   2.2, 1402. ,    9. , ...,    3. ,    2. ,   20. ],\n",
+       "       ...,\n",
+       "       [   2.4, 1142. ,   12.4, ...,    4. ,    0. ,   12. ],\n",
+       "       [   2.1, 1003. ,    9.5, ...,    4. ,    0. ,   13. ],\n",
+       "       [   2.2, 1071. ,   11.9, ...,    4. ,    0. ,   14. ]])"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "a = np.array(df)\n",
+    "a"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The average of the columns is:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([2.09193117e+00, 1.10273036e+03, 1.01903922e+01, 9.42548253e+02,\n",
+       "       2.34058566e+02, 8.32742225e+02, 1.09698942e+02, 1.45301453e+03,\n",
+       "       1.03051192e+03, 1.83173560e+01, 4.88174308e+01, 1.01738155e+00,\n",
+       "       6.31035588e+00, 3.00993908e+00, 1.14985572e+01])"
+      ]
+     },
+     "execution_count": 5,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "np.mean(a, axis=0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The standard deviation of the columns is:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([1.43839252e+00, 2.19576367e+02, 7.56536693e+00, 2.69566963e+02,\n",
+       "       2.04971518e+02, 2.55695758e+02, 4.75175481e+01, 3.47415518e+02,\n",
+       "       4.10894801e+02, 8.82141160e+00, 1.73533985e+01, 4.04807227e-01,\n",
+       "       3.43797585e+00, 2.00021575e+00, 6.92281165e+00])"
+      ]
+     },
+     "execution_count": 6,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "np.std(a, axis=0)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We transform the data into a standard normal distribution with an average of 0 and standard deviation of 1."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0.35321987,  1.17166361,  0.22597817, ..., -0.96287933,\n",
+       "        -0.50491507,  0.93913327],\n",
+       "       [-0.06391244,  0.86197636, -0.10447507, ..., -0.96287933,\n",
+       "        -0.50491507,  1.08358325],\n",
+       "       [ 0.07513167,  1.36294102, -0.15734759, ..., -0.96287933,\n",
+       "        -0.50491507,  1.22803323],\n",
+       "       ...,\n",
+       "       [ 0.21417577,  0.17884273,  0.29206882, ..., -0.6720105 ,\n",
+       "        -1.50480721,  0.0724334 ],\n",
+       "       [ 0.00560961, -0.45419443, -0.09125694, ..., -0.6720105 ,\n",
+       "        -1.50480721,  0.21688338],\n",
+       "       [ 0.07513167, -0.14450718,  0.22597817, ..., -0.6720105 ,\n",
+       "        -1.50480721,  0.36133336]])"
+      ]
+     },
+     "execution_count": 7,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from sklearn.preprocessing import StandardScaler\n",
+    "\n",
+    "scaler = StandardScaler()\n",
+    "scaled_data = scaler.fit_transform(a)\n",
+    "k = scaler.transform(df)\n",
+    "k"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The mean and standard deviation of the columns after standardization."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "standard deviation:  [1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1. 1.]\n",
+      "\n",
+      "mean:  [ 4.55622145e-17 -2.27811073e-16 -2.42998478e-17 -2.00473744e-16\n",
+      "  3.64497716e-17  1.64023972e-16 -7.28995433e-17  2.55148401e-16\n",
+      " -1.15424277e-16 -2.06548706e-16  1.21499239e-16 -2.42998478e-16\n",
+      "  7.28995433e-17 -5.90410363e-17 -3.95821739e-17]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"standard deviation: \",np.std(k, axis=0))\n",
+    "#k=k.astype(int)\n",
+    "print()\n",
+    "print(\"mean: \",np.mean(k, axis=0))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "## We substitute standardized data for Tensorflow"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "array([[ 0.35321987,  1.17166361,  0.22597817, ..., -0.96287933,\n",
+       "        -0.50491507,  0.93913327],\n",
+       "       [-0.06391244,  0.86197636, -0.10447507, ..., -0.96287933,\n",
+       "        -0.50491507,  1.08358325],\n",
+       "       [ 0.07513167,  1.36294102, -0.15734759, ..., -0.96287933,\n",
+       "        -0.50491507,  1.22803323],\n",
+       "       ...,\n",
+       "       [ 0.21417577,  0.17884273,  0.29206882, ..., -0.6720105 ,\n",
+       "        -1.50480721,  0.0724334 ],\n",
+       "       [ 0.00560961, -0.45419443, -0.09125694, ..., -0.6720105 ,\n",
+       "        -1.50480721,  0.21688338],\n",
+       "       [ 0.07513167, -0.14450718,  0.22597817, ..., -0.6720105 ,\n",
+       "        -1.50480721,  0.36133336]])"
+      ]
+     },
+     "execution_count": 9,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "conc = np.vstack(k)\n",
+    "conc"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "SKS = pd.DataFrame(conc)\n",
+    "SKS.columns = ['CO_GT', 'PT08.S1_CO', 'C6H6_GT', 'PT08.S2_NMHC',\n",
+    "       'NOx_GT', 'PT08.S3_NOx', 'NO2_GT', 'PT08.S4_NO2', 'PT08.S5_O3',\n",
+    "       'T', 'RH', 'AH', 'Month', 'Weekday', 'Hours']"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>CO_GT</th>\n",
+       "      <th>PT08.S1_CO</th>\n",
+       "      <th>C6H6_GT</th>\n",
+       "      <th>PT08.S2_NMHC</th>\n",
+       "      <th>NOx_GT</th>\n",
+       "      <th>PT08.S3_NOx</th>\n",
+       "      <th>NO2_GT</th>\n",
+       "      <th>PT08.S4_NO2</th>\n",
+       "      <th>PT08.S5_O3</th>\n",
+       "      <th>T</th>\n",
+       "      <th>RH</th>\n",
+       "      <th>AH</th>\n",
+       "      <th>Month</th>\n",
+       "      <th>Weekday</th>\n",
+       "      <th>Hours</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>0.353220</td>\n",
+       "      <td>1.171664</td>\n",
+       "      <td>0.225978</td>\n",
+       "      <td>0.383770</td>\n",
+       "      <td>-0.332039</td>\n",
+       "      <td>0.873138</td>\n",
+       "      <td>0.069470</td>\n",
+       "      <td>0.687895</td>\n",
+       "      <td>0.577978</td>\n",
+       "      <td>-0.534762</td>\n",
+       "      <td>0.004758</td>\n",
+       "      <td>-0.641247</td>\n",
+       "      <td>-0.962879</td>\n",
+       "      <td>-0.504915</td>\n",
+       "      <td>0.939133</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>-0.063912</td>\n",
+       "      <td>0.861976</td>\n",
+       "      <td>-0.104475</td>\n",
+       "      <td>0.046192</td>\n",
+       "      <td>-0.639399</td>\n",
+       "      <td>1.334624</td>\n",
+       "      <td>-0.372472</td>\n",
+       "      <td>0.305068</td>\n",
+       "      <td>-0.142401</td>\n",
+       "      <td>-0.568770</td>\n",
+       "      <td>-0.064393</td>\n",
+       "      <td>-0.721038</td>\n",
+       "      <td>-0.962879</td>\n",
+       "      <td>-0.504915</td>\n",
+       "      <td>1.083583</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>0.075132</td>\n",
+       "      <td>1.362941</td>\n",
+       "      <td>-0.157348</td>\n",
+       "      <td>-0.013163</td>\n",
+       "      <td>-0.502795</td>\n",
+       "      <td>1.201654</td>\n",
+       "      <td>0.090515</td>\n",
+       "      <td>0.293555</td>\n",
+       "      <td>0.105838</td>\n",
+       "      <td>-0.727475</td>\n",
+       "      <td>0.298649</td>\n",
+       "      <td>-0.660022</td>\n",
+       "      <td>-0.962879</td>\n",
+       "      <td>-0.504915</td>\n",
+       "      <td>1.228033</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "      CO_GT  PT08.S1_CO   C6H6_GT  PT08.S2_NMHC    NOx_GT  PT08.S3_NOx  \\\n",
+       "0  0.353220    1.171664  0.225978      0.383770 -0.332039     0.873138   \n",
+       "1 -0.063912    0.861976 -0.104475      0.046192 -0.639399     1.334624   \n",
+       "2  0.075132    1.362941 -0.157348     -0.013163 -0.502795     1.201654   \n",
+       "\n",
+       "     NO2_GT  PT08.S4_NO2  PT08.S5_O3         T        RH        AH     Month  \\\n",
+       "0  0.069470     0.687895    0.577978 -0.534762  0.004758 -0.641247 -0.962879   \n",
+       "1 -0.372472     0.305068   -0.142401 -0.568770 -0.064393 -0.721038 -0.962879   \n",
+       "2  0.090515     0.293555    0.105838 -0.727475  0.298649 -0.660022 -0.962879   \n",
+       "\n",
+       "    Weekday     Hours  \n",
+       "0 -0.504915  0.939133  \n",
+       "1 -0.504915  1.083583  \n",
+       "2 -0.504915  1.228033  "
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "SKS.head(3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Now that we have standardized data, we can create a new Tensorflow linear regression model\n",
+    "# Tensorflow linear regression model without standardization\n",
+    "We take the original data without standardization\n",
+    "\n",
+    "###  <span style=\"color:blue\"><span style=\"color:blue\">Step 1. Divides the data into a test and training set</span></span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(7486, 15) (1871, 15)\n"
+     ]
+    }
+   ],
+   "source": [
+    "df_train=df.sample(frac=0.8,random_state=200)\n",
+    "df_test=df.drop(df_train.index)\n",
+    "\n",
+    "print(df_train.shape, df_test.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>CO_GT</th>\n",
+       "      <th>PT08.S1_CO</th>\n",
+       "      <th>C6H6_GT</th>\n",
+       "      <th>PT08.S2_NMHC</th>\n",
+       "      <th>NOx_GT</th>\n",
+       "      <th>PT08.S3_NOx</th>\n",
+       "      <th>NO2_GT</th>\n",
+       "      <th>PT08.S4_NO2</th>\n",
+       "      <th>PT08.S5_O3</th>\n",
+       "      <th>T</th>\n",
+       "      <th>RH</th>\n",
+       "      <th>AH</th>\n",
+       "      <th>Month</th>\n",
+       "      <th>Weekday</th>\n",
+       "      <th>Hours</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>6632</th>\n",
+       "      <td>2.6</td>\n",
+       "      <td>1099.0</td>\n",
+       "      <td>10.4</td>\n",
+       "      <td>994.0</td>\n",
+       "      <td>401.0</td>\n",
+       "      <td>715.0</td>\n",
+       "      <td>117.0</td>\n",
+       "      <td>1164.0</td>\n",
+       "      <td>1186.0</td>\n",
+       "      <td>6.8</td>\n",
+       "      <td>57.8</td>\n",
+       "      <td>0.5768</td>\n",
+       "      <td>12</td>\n",
+       "      <td>6</td>\n",
+       "      <td>2</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7123</th>\n",
+       "      <td>2.2</td>\n",
+       "      <td>1149.0</td>\n",
+       "      <td>8.4</td>\n",
+       "      <td>914.0</td>\n",
+       "      <td>382.0</td>\n",
+       "      <td>742.0</td>\n",
+       "      <td>147.0</td>\n",
+       "      <td>1072.0</td>\n",
+       "      <td>1242.0</td>\n",
+       "      <td>9.5</td>\n",
+       "      <td>41.2</td>\n",
+       "      <td>0.4908</td>\n",
+       "      <td>1</td>\n",
+       "      <td>5</td>\n",
+       "      <td>13</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7599</th>\n",
+       "      <td>5.7</td>\n",
+       "      <td>1578.0</td>\n",
+       "      <td>29.0</td>\n",
+       "      <td>1527.0</td>\n",
+       "      <td>875.0</td>\n",
+       "      <td>419.0</td>\n",
+       "      <td>179.0</td>\n",
+       "      <td>1761.0</td>\n",
+       "      <td>2086.0</td>\n",
+       "      <td>7.9</td>\n",
+       "      <td>60.0</td>\n",
+       "      <td>0.6406</td>\n",
+       "      <td>1</td>\n",
+       "      <td>4</td>\n",
+       "      <td>9</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "      CO_GT  PT08.S1_CO  C6H6_GT  PT08.S2_NMHC  NOx_GT  PT08.S3_NOx  NO2_GT  \\\n",
+       "6632    2.6      1099.0     10.4         994.0   401.0        715.0   117.0   \n",
+       "7123    2.2      1149.0      8.4         914.0   382.0        742.0   147.0   \n",
+       "7599    5.7      1578.0     29.0        1527.0   875.0        419.0   179.0   \n",
+       "\n",
+       "      PT08.S4_NO2  PT08.S5_O3    T    RH      AH  Month  Weekday  Hours  \n",
+       "6632       1164.0      1186.0  6.8  57.8  0.5768     12        6      2  \n",
+       "7123       1072.0      1242.0  9.5  41.2  0.4908      1        5     13  \n",
+       "7599       1761.0      2086.0  7.9  60.0  0.6406      1        4      9  "
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df_train.head(3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 2. Converts data to Tensorflow format</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[_NumericColumn(key='CO_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S1_CO', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='C6H6_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S2_NMHC', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='NOx_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S3_NOx', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='NO2_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S4_NO2', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S5_O3', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='T', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='RH', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='AH', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='Month', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='Weekday', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='Hours', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None)]"
+      ]
+     },
+     "execution_count": 14,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "COL = ['CO_GT', 'PT08.S1_CO', 'C6H6_GT', 'PT08.S2_NMHC',\n",
+    "       'NOx_GT', 'PT08.S3_NOx', 'NO2_GT', 'PT08.S4_NO2', 'PT08.S5_O3',\n",
+    "       'T', 'RH', 'AH', 'Month', 'Weekday', 'Hours']\n",
+    "\n",
+    "\n",
+    "features = [tf.feature_column.numeric_column(k) for k in COL]\n",
+    "features"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 3. Tensorflow Linear Regression Estimator</span>\n",
+    "katalog: train_Wojtek"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Using default config.\n",
+      "INFO:tensorflow:Using config: {'_model_dir': 'train_Wojtek', '_tf_random_seed': None, '_save_summary_steps': 100, '_save_checkpoints_steps': None, '_save_checkpoints_secs': 600, '_session_config': None, '_keep_checkpoint_max': 5, '_keep_checkpoint_every_n_hours': 10000, '_log_step_count_steps': 100, '_service': None, '_cluster_spec': <tensorflow.python.training.server_lib.ClusterSpec object at 0x0000026977FA29E8>, '_task_type': 'worker', '_task_id': 0, '_master': '', '_is_chief': True, '_num_ps_replicas': 0, '_num_worker_replicas': 1}\n"
+     ]
+    }
+   ],
+   "source": [
+    "model = tf.estimator.LinearRegressor(model_dir=\"train_Wojtek\", feature_columns=features)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 4. Defining how to feed the model and what is the result variable</span>\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "FEATURES = ['CO_GT','PT08.S1_CO', 'C6H6_GT', 'PT08.S2_NMHC',\n",
+    "       'NOx_GT', 'PT08.S3_NOx', 'NO2_GT', 'PT08.S4_NO2', 'PT08.S5_O3',\n",
+    "       'T', 'RH', 'AH', 'Month', 'Weekday', 'Hours']\n",
+    "LABEL= 'CO_GT'\n",
+    "\n",
+    "def get_input_fn(data_set, num_epochs=None, n_batch = 128, shuffle=True):\n",
+    "    return tf.estimator.inputs.pandas_input_fn(\n",
+    "       x=pd.DataFrame({k: data_set[k].values for k in FEATURES}),\n",
+    "       y = pd.Series(data_set[LABEL].values),\n",
+    "       batch_size=n_batch,   \n",
+    "       num_epochs=num_epochs,\n",
+    "       shuffle=shuffle)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 5. Training the model</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Create CheckpointSaverHook.\n",
+      "INFO:tensorflow:Restoring parameters from train_Wojtek\\model.ckpt-26000\n",
+      "INFO:tensorflow:Saving checkpoints for 26001 into train_Wojtek\\model.ckpt.\n",
+      "INFO:tensorflow:loss = 6.6595306, step = 26001\n",
+      "INFO:tensorflow:global_step/sec: 254.841\n",
+      "INFO:tensorflow:loss = 4.6023674, step = 26101 (0.392 sec)\n",
+      "INFO:tensorflow:global_step/sec: 292.826\n",
+      "INFO:tensorflow:loss = 4.453288, step = 26201 (0.342 sec)\n",
+      "INFO:tensorflow:global_step/sec: 283.629\n",
+      "INFO:tensorflow:loss = 4.687188, step = 26301 (0.353 sec)\n",
+      "INFO:tensorflow:global_step/sec: 306.738\n",
+      "INFO:tensorflow:loss = 3.7421465, step = 26401 (0.326 sec)\n",
+      "INFO:tensorflow:global_step/sec: 302.427\n",
+      "INFO:tensorflow:loss = 4.785145, step = 26501 (0.347 sec)\n",
+      "INFO:tensorflow:global_step/sec: 276.266\n",
+      "INFO:tensorflow:loss = 2.2828135, step = 26601 (0.345 sec)\n",
+      "INFO:tensorflow:global_step/sec: 294.96\n",
+      "INFO:tensorflow:loss = 5.353112, step = 26701 (0.339 sec)\n",
+      "INFO:tensorflow:global_step/sec: 301.31\n",
+      "INFO:tensorflow:loss = 5.3053093, step = 26801 (0.332 sec)\n",
+      "INFO:tensorflow:global_step/sec: 302.352\n",
+      "INFO:tensorflow:loss = 4.1893435, step = 26901 (0.346 sec)\n",
+      "INFO:tensorflow:Saving checkpoints for 27000 into train_Wojtek\\model.ckpt.\n",
+      "INFO:tensorflow:Loss for final step: 4.5334344.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<tensorflow.python.estimator.canned.linear.LinearRegressor at 0x26977faf940>"
+      ]
+     },
+     "execution_count": 17,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model.train(input_fn=get_input_fn(df_train, \n",
+    "                                      num_epochs=None,\n",
+    "                                      n_batch = 128,\n",
+    "                                      shuffle=False),\n",
+    "                                      steps=1000)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 6. Model assessment</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Starting evaluation at 2019-12-23-13:02:32\n",
+      "INFO:tensorflow:Restoring parameters from train_Wojtek\\model.ckpt-27000\n",
+      "INFO:tensorflow:Finished evaluation at 2019-12-23-13:02:33\n",
+      "INFO:tensorflow:Saving dict for global step 27000: average_loss = 0.036338322, global_step = 27000, loss = 11.3315\n"
+     ]
+    }
+   ],
+   "source": [
+    "ev = model.evaluate(    \n",
+    "          input_fn=get_input_fn(df_test,                          \n",
+    "          num_epochs=1,                          \n",
+    "          n_batch = 356,                          \n",
+    "          shuffle=False))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### <span style=\"color:blue\">Calculation of R2</span>\n",
+    "\n",
+    "I make a prediction on a test set."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y = model.predict(    \n",
+    "         input_fn=get_input_fn(df_test,                          \n",
+    "         num_epochs=1,                          \n",
+    "         n_batch = 256,                          \n",
+    "         shuffle=False))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Restoring parameters from train_Wojtek\\model.ckpt-27000\n"
+     ]
+    }
+   ],
+   "source": [
+    "import itertools\n",
+    "\n",
+    "predictions = list(p[\"predictions\"] for p in itertools.islice(y, 3000))\n",
+    "#print(\"Predictions: {}\".format(str(predictions)))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "Przekształcam wynik na dataframe"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "dtype('float32')"
+      ]
+     },
+     "execution_count": 21,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "conc = np.vstack(predictions)\n",
+    "ZHP = pd.DataFrame(conc)\n",
+    "ZHP.rename(columns={0:'y_pred'}, inplace=True)\n",
+    "\n",
+    "kot = ZHP['y_pred'].values\n",
+    "kot = kot.astype('float32')\n",
+    "kot.dtype"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "I agree on the data formats for the theoretical and empirical variable"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "dtype('float32')"
+      ]
+     },
+     "execution_count": 22,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y = df_test['CO_GT'].values\n",
+    "y = y.astype('float32')\n",
+    "y.dtype"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "y         float32\n",
+       "y_pred    float32\n",
+       "dtype: object"
+      ]
+     },
+     "execution_count": 23,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "PZU = pd.DataFrame({'y': y, 'y_pred': kot })\n",
+    "PZU.dtypes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def R_squared(y, y_pred):\n",
+    "    \n",
+    "  residual = tf.reduce_sum(tf.square(tf.subtract(y,y_pred)))\n",
+    "  total = tf.reduce_sum(tf.square(tf.subtract(y, tf.reduce_mean(y))))\n",
+    "  r2 = tf.subtract(1.0, tf.div(residual, total))\n",
+    "  return r2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<tf.Tensor 'Sub_2:0' shape=() dtype=float32>"
+      ]
+     },
+     "execution_count": 25,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "residual = tf.reduce_sum(tf.square(tf.subtract(y,kot)))\n",
+    "total = tf.reduce_sum(tf.square(tf.subtract(y, tf.reduce_mean(y))))\n",
+    "r2 = tf.subtract(1.0, tf.div(residual, total))\n",
+    "r2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 26,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "R Square parameter:  0.9814238\n"
+     ]
+    }
+   ],
+   "source": [
+    "sess = tf.Session()\n",
+    "a = sess.run(r2)\n",
+    "print('R Square parameter: ',a)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Tensorflow linear regression model with standardization\n",
+    "We are now substituting standardized data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:#741b47\">Step 1. Divides the data into a test and training set</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 27,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(7486, 15) (1871, 15)\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>CO_GT</th>\n",
+       "      <th>PT08.S1_CO</th>\n",
+       "      <th>C6H6_GT</th>\n",
+       "      <th>PT08.S2_NMHC</th>\n",
+       "      <th>NOx_GT</th>\n",
+       "      <th>PT08.S3_NOx</th>\n",
+       "      <th>NO2_GT</th>\n",
+       "      <th>PT08.S4_NO2</th>\n",
+       "      <th>PT08.S5_O3</th>\n",
+       "      <th>T</th>\n",
+       "      <th>RH</th>\n",
+       "      <th>AH</th>\n",
+       "      <th>Month</th>\n",
+       "      <th>Weekday</th>\n",
+       "      <th>Hours</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>6632</th>\n",
+       "      <td>0.353220</td>\n",
+       "      <td>-0.016989</td>\n",
+       "      <td>0.027706</td>\n",
+       "      <td>0.190868</td>\n",
+       "      <td>0.814462</td>\n",
+       "      <td>-0.460478</td>\n",
+       "      <td>0.153650</td>\n",
+       "      <td>-0.831899</td>\n",
+       "      <td>0.378413</td>\n",
+       "      <td>-1.305614</td>\n",
+       "      <td>0.517626</td>\n",
+       "      <td>-1.088374</td>\n",
+       "      <td>1.654940</td>\n",
+       "      <td>1.494869</td>\n",
+       "      <td>-1.372066</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7123</th>\n",
+       "      <td>0.075132</td>\n",
+       "      <td>0.210722</td>\n",
+       "      <td>-0.236656</td>\n",
+       "      <td>-0.105904</td>\n",
+       "      <td>0.721766</td>\n",
+       "      <td>-0.354884</td>\n",
+       "      <td>0.784995</td>\n",
+       "      <td>-1.096711</td>\n",
+       "      <td>0.514701</td>\n",
+       "      <td>-0.999540</td>\n",
+       "      <td>-0.438959</td>\n",
+       "      <td>-1.300821</td>\n",
+       "      <td>-1.544617</td>\n",
+       "      <td>0.994923</td>\n",
+       "      <td>0.216883</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7599</th>\n",
+       "      <td>2.508403</td>\n",
+       "      <td>2.164484</td>\n",
+       "      <td>2.486278</td>\n",
+       "      <td>2.168113</td>\n",
+       "      <td>3.126978</td>\n",
+       "      <td>-1.618104</td>\n",
+       "      <td>1.458431</td>\n",
+       "      <td>0.886505</td>\n",
+       "      <td>2.568755</td>\n",
+       "      <td>-1.180917</td>\n",
+       "      <td>0.644402</td>\n",
+       "      <td>-0.930768</td>\n",
+       "      <td>-1.544617</td>\n",
+       "      <td>0.494977</td>\n",
+       "      <td>-0.360917</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         CO_GT  PT08.S1_CO   C6H6_GT  PT08.S2_NMHC    NOx_GT  PT08.S3_NOx  \\\n",
+       "6632  0.353220   -0.016989  0.027706      0.190868  0.814462    -0.460478   \n",
+       "7123  0.075132    0.210722 -0.236656     -0.105904  0.721766    -0.354884   \n",
+       "7599  2.508403    2.164484  2.486278      2.168113  3.126978    -1.618104   \n",
+       "\n",
+       "        NO2_GT  PT08.S4_NO2  PT08.S5_O3         T        RH        AH  \\\n",
+       "6632  0.153650    -0.831899    0.378413 -1.305614  0.517626 -1.088374   \n",
+       "7123  0.784995    -1.096711    0.514701 -0.999540 -0.438959 -1.300821   \n",
+       "7599  1.458431     0.886505    2.568755 -1.180917  0.644402 -0.930768   \n",
+       "\n",
+       "         Month   Weekday     Hours  \n",
+       "6632  1.654940  1.494869 -1.372066  \n",
+       "7123 -1.544617  0.994923  0.216883  \n",
+       "7599 -1.544617  0.494977 -0.360917  "
+      ]
+     },
+     "execution_count": 27,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df_trainS=SKS.sample(frac=0.8,random_state=200)\n",
+    "df_testS=SKS.drop(df_trainS.index)\n",
+    "\n",
+    "print(df_trainS.shape, df_testS.shape)\n",
+    "df_trainS.head(3)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:#741b47\">Step 2. Converts data to Tensorflow format</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 28,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[_NumericColumn(key='CO_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S1_CO', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='C6H6_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S2_NMHC', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='NOx_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S3_NOx', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='NO2_GT', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S4_NO2', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='PT08.S5_O3', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='T', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='RH', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='AH', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='Month', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='Weekday', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None),\n",
+       " _NumericColumn(key='Hours', shape=(1,), default_value=None, dtype=tf.float32, normalizer_fn=None)]"
+      ]
+     },
+     "execution_count": 28,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "FOL = ['CO_GT', 'PT08.S1_CO', 'C6H6_GT', 'PT08.S2_NMHC',\n",
+    "       'NOx_GT', 'PT08.S3_NOx', 'NO2_GT', 'PT08.S4_NO2', 'PT08.S5_O3',\n",
+    "       'T', 'RH', 'AH', 'Month', 'Weekday', 'Hours']\n",
+    "\n",
+    "\n",
+    "PCK = [tf.feature_column.numeric_column(k) for k in FOL]\n",
+    "PCK"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 3. Tensorflow Linear Regression Estimator</span>\n",
+    "katalog: train_Wojtek"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 29,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Using default config.\n",
+      "INFO:tensorflow:Using config: {'_model_dir': 'train_Wojtek7', '_tf_random_seed': None, '_save_summary_steps': 100, '_save_checkpoints_steps': None, '_save_checkpoints_secs': 600, '_session_config': None, '_keep_checkpoint_max': 5, '_keep_checkpoint_every_n_hours': 10000, '_log_step_count_steps': 100, '_service': None, '_cluster_spec': <tensorflow.python.training.server_lib.ClusterSpec object at 0x0000026978956898>, '_task_type': 'worker', '_task_id': 0, '_master': '', '_is_chief': True, '_num_ps_replicas': 0, '_num_worker_replicas': 1}\n"
+     ]
+    }
+   ],
+   "source": [
+    "model = tf.estimator.LinearRegressor(model_dir=\"train_Wojtek7\", feature_columns=PCK)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    " ###  <span style=\"color:#741b47\">Step 4. Defining how to feed the model and what is the result variable</span>"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:blue\">Step 5. Training the model</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 30,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Create CheckpointSaverHook.\n",
+      "INFO:tensorflow:Restoring parameters from train_Wojtek7\\model.ckpt-2000\n",
+      "INFO:tensorflow:Saving checkpoints for 2001 into train_Wojtek7\\model.ckpt.\n",
+      "INFO:tensorflow:loss = 2.0665622e-05, step = 2001\n",
+      "INFO:tensorflow:global_step/sec: 213.307\n",
+      "INFO:tensorflow:loss = 1.6055166e-05, step = 2101 (0.484 sec)\n",
+      "INFO:tensorflow:global_step/sec: 291.311\n",
+      "INFO:tensorflow:loss = 9.897283e-06, step = 2201 (0.328 sec)\n",
+      "INFO:tensorflow:global_step/sec: 300.691\n",
+      "INFO:tensorflow:loss = 1.2378916e-05, step = 2301 (0.333 sec)\n",
+      "INFO:tensorflow:global_step/sec: 321.935\n",
+      "INFO:tensorflow:loss = 1.0588554e-05, step = 2401 (0.311 sec)\n",
+      "INFO:tensorflow:global_step/sec: 296.952\n",
+      "INFO:tensorflow:loss = 6.5760632e-06, step = 2501 (0.337 sec)\n",
+      "INFO:tensorflow:global_step/sec: 251.909\n",
+      "INFO:tensorflow:loss = 4.1589115e-06, step = 2601 (0.407 sec)\n",
+      "INFO:tensorflow:global_step/sec: 284.604\n",
+      "INFO:tensorflow:loss = 2.8275836e-06, step = 2701 (0.342 sec)\n",
+      "INFO:tensorflow:global_step/sec: 246.777\n",
+      "INFO:tensorflow:loss = 2.100759e-06, step = 2801 (0.405 sec)\n",
+      "INFO:tensorflow:global_step/sec: 230.751\n",
+      "INFO:tensorflow:loss = 1.8578445e-06, step = 2901 (0.449 sec)\n",
+      "INFO:tensorflow:Saving checkpoints for 3000 into train_Wojtek7\\model.ckpt.\n",
+      "INFO:tensorflow:Loss for final step: 1.4988716e-06.\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "<tensorflow.python.estimator.canned.linear.LinearRegressor at 0x269788f0fd0>"
+      ]
+     },
+     "execution_count": 30,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "model.train(input_fn=get_input_fn(df_trainS, \n",
+    "                                      num_epochs=None,\n",
+    "                                      n_batch = 128,\n",
+    "                                      shuffle=False),\n",
+    "                                      steps=1000)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "###  <span style=\"color:#741b47\">Step 6. Model assessment</span>"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 31,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Starting evaluation at 2019-12-23-13:02:39\n",
+      "INFO:tensorflow:Restoring parameters from train_Wojtek7\\model.ckpt-3000\n",
+      "INFO:tensorflow:Finished evaluation at 2019-12-23-13:02:39\n",
+      "INFO:tensorflow:Saving dict for global step 3000: average_loss = 1.1030006e-08, global_step = 3000, loss = 3.4395237e-06\n"
+     ]
+    }
+   ],
+   "source": [
+    "ev = model.evaluate(    \n",
+    "          input_fn=get_input_fn(df_testS,                          \n",
+    "          num_epochs=1,                          \n",
+    "          n_batch = 356,                          \n",
+    "          shuffle=False))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "#### <span style=\"color:#741b47\">Calculation of R2</span>\n",
+    "\n",
+    "I make a prediction on a test set."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 32,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "y = model.predict(    \n",
+    "         input_fn=get_input_fn(df_testS,                          \n",
+    "         num_epochs=1,                          \n",
+    "         n_batch = 256,                          \n",
+    "         shuffle=False))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 33,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "INFO:tensorflow:Restoring parameters from train_Wojtek7\\model.ckpt-3000\n"
+     ]
+    }
+   ],
+   "source": [
+    "import itertools\n",
+    "\n",
+    "predictions = list(p[\"predictions\"] for p in itertools.islice(y, 3000))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "dtype('float32')"
+      ]
+     },
+     "execution_count": 34,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import numpy as np\n",
+    "\n",
+    "conc = np.vstack(predictions)\n",
+    "ZHP = pd.DataFrame(conc)\n",
+    "ZHP.rename(columns={0:'y_pred'}, inplace=True)\n",
+    "\n",
+    "kot = ZHP['y_pred'].values\n",
+    "kot = kot.astype('float32')\n",
+    "kot.dtype"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "dtype('float32')"
+      ]
+     },
+     "execution_count": 35,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "y = df_testS['CO_GT'].values\n",
+    "y = y.astype('float32')\n",
+    "y.dtype"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "y         float32\n",
+       "y_pred    float32\n",
+       "dtype: object"
+      ]
+     },
+     "execution_count": 36,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "PZU = pd.DataFrame({'y': y, 'y_pred': kot })\n",
+    "PZU.dtypes"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 37,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def R_squared(y, y_pred):\n",
+    "    \n",
+    "  residual = tf.reduce_sum(tf.square(tf.subtract(y,y_pred)))\n",
+    "  total = tf.reduce_sum(tf.square(tf.subtract(y, tf.reduce_mean(y))))\n",
+    "  r2 = tf.subtract(1.0, tf.div(residual, total))\n",
+    "  return r2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 38,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<tf.Tensor 'Sub_5:0' shape=() dtype=float32>"
+      ]
+     },
+     "execution_count": 38,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "residual = tf.reduce_sum(tf.square(tf.subtract(y,kot)))\n",
+    "total = tf.reduce_sum(tf.square(tf.subtract(y, tf.reduce_mean(y))))\n",
+    "r2 = tf.subtract(1.0, tf.div(residual, total))\n",
+    "r2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 39,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "R Square parameter:  1.0\n"
+     ]
+    }
+   ],
+   "source": [
+    "sess = tf.Session()\n",
+    "a = sess.run(r2)\n",
+    "print('R Square parameter: ',a)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.6.9"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 2
+}
